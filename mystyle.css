@@ -1,0 +1,96 @@
+/*id-selector #id*/
+#main {font-family:Arial, sans-serif; }
+#s1{background-color:yellow; width:730px;padding:15px; border-radius: 0px 10px 10px 10px;
+box-shadow: 10px 10px 5px #888888;margin-bottom:5px;}
+#s2{background-color:lime; width:730px;padding:15px; border-radius: 0px 10px 10px 10px;
+box-shadow: 10px 10px 5px #888888;margin-bottom:5px;}
+#s3{background-color:red; width:730px;padding:15px; border-radius: 0px 10px 10px 10px;
+box-shadow: 10px 10px 5px #888888;margin-top:5px;}
+/*Element-Selector for h1*/
+h1{color: #000;}
+
+#base_1{padding:5px; margin:5px; }
+#number_1{padding:5px; margin:5px; }
+#bt_calc{ padding:5px; margin:5px;}
+#base_2{padding:5px; margin:5px; }
+#number_2{padding:5px; margin:5px; }
+
+#sel_ex{width:235px; padding:5px; margin:5px; height:202px;}
+#text_ex{font-family:Courier; height:150px; width:500px; padding:5px; margin:5px;resize: none;}
+#exercise_ex{width:1cm;padding:5px; margin:5px; text-align: center;}
+#bt_ex_sel{width:60px; padding:5px; margin:5px; margin-left:30px; }
+
+#ex_num{width:1cm;padding:5px; margin:5px;border-radius: 2px; text-align: center; }
+#recom_date{width:2.2cm;padding:5px; margin:5px;border-radius: 2px;text-align: center;}
+
+/*class-selector for .name*/
+.title{width:150px; padding:5px; margin:5px; float:left;border-radius: 2px;}
+.text{font-family:Courier; height:50px; padding:5px; margin:5px;border-radius: 2px;resize: none;}
+.add{padding:0px 5px 0px 5px; margin:5px;border-radius: 2px;}
+.recom{padding:0px 5px 0px 5px; margin:5px;border-radius: 2px;}
+.up{padding:0px 5px 0px 5px; margin:5px;border-radius: 2px;}
+.rem{padding:0px 5px 0px 5px; margin:5px;border-radius: 2px;}
+#submit{width:80px; padding: 0px 5px 0px 5px; margin:5px;border-radius: 2px;}
+
+.add_div{float:left;}
+/* Tooltip text */
+.addtext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+	
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.add_div:hover .addtext {
+    visibility: visible;
+}
+.add_div .addtext::after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    right: 105%; /* To the right of the tooltip */
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent black;
+}
+
+
+.recom_div{float:left;}
+/* Tooltip text */
+.recomtext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+ 
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.recom_div:hover .recomtext {
+    visibility: visible;
+}
+.recom_div .recomtext::after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    right: 100%; /* To the left of the tooltip */
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+}
