@@ -22,30 +22,124 @@ function init()
 {
   var out = '\
     <input type="button" value="Umrechnung B1 -> B2" onclick="formB2B()" />\
-    <input type="button" value="Ganze Zahl B10 -> B2" onclick="formNegativTen2Two()" />';
+    <input type="button" value="Ganze Zahl B10 <-> B2" onclick="formNegativTen2Two()" />';
   document.getElementById("navbar").innerHTML = out;
   formB2B();
 }
 
 function formNegativTen2Two() {
-  var comment = '<h2>Geben Sie im grünen Feld die umzurechnende Zahl ein. \
+  var comment = '<h2>Geben Sie die umzurechnende Zahl, die Stellenzahl und den Bias-Wert ein. \
+    Anschließend drücken Sie auf die Berechnen-Schaltfläche neben der Zahl.\
     </h2>';
   var partBaseText = 'min="2" max="'+B_MAX+'" pattern="[2-9]|1[0-9]" size="2" />';
   
-  var inputText = '<label for="base_1">Basis</label>\
-    <input type="number" id="base_1" name="base_1" value="2" ' + partBaseText +
+  var inputText_B10 = 
+    '<h3>Zahl zur Basis 10</h3>' +
     '<label for="number_1">Zahl</label>\
-    <input type="text" id="number_1" name="number_1" value="0" />\
-    <input type="button" id="bt_calc" name="bt_calc" onclick="calcNatural()" value="Umrechnen" />';
-  var outputText = '<label for="base_2">Basis</label>\
-    <input type="number" id="base_2" name="base_2" value="10" ' + partBaseText + 
+    <input type="text" id="number_1" name="number_1" value="0" pattern="-[0-9]+|[0-9]+" />\
+    <input type="button" id="bt_calc_1" name="bt_calc_1" onclick="calcTen2ExZw()" value="Berechnen" />';
+    
+  var inputText_B2a =
+    '<label for="digits">Stellenzahl</label>\
+    <input type="text" id="digits" name="digits" value="8"\
+    min="2" max="64" pattern="[2-9]|[1-5][0-9]|6[0-4]" size="2"/>' +
+    '<label for="bias" style="margin-left:5px;">Bias</label>\
+    <input type="text" id="bias" name="bias" value="4"\
+    min="0" max="128" pattern="[0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]" size="3"/>';
+  
+  var inputText_B2 = 
+    '<h3>Zahlen zur Basis 2</h3>' +
+    '<h4>Exzessdarstellung</h4>' +
     '<label for="number_2">Zahl</label>\
-    <input type="text" id="number_2" name="number_2" readonly="true" value="0"/>';
+    <input type="text" id="number_2" name="number_2" value="0" pattern="-[0-1]+|[0-1]+"/>' + 
+    '<input type="button" id="bt_calc_2" name="bt_calc_2" onclick="calcEx2ZwTen()" value="Berechnen" />' +
+    '<h4>Zweierkomplement</h4>' +
+    '<label for="number_3">Zahl</label>\
+    <input type="text" id="number_3" name="number_3" value="0" pattern="-[0-1]+|[0-1]+"/>' +
+    '<input type="button" id="bt_calc_3" name="bt_calc_3" onclick="calcZw2ExTen()" value="Berechnen" />'
+    ;
+  document.getElementById("s4").style.visibility = "visible";
   document.getElementById("s1").innerHTML = comment;
-  document.getElementById("s2").innerHTML = inputText;
-  document.getElementById("s3").innerHTML = outputText;
+  document.getElementById("s2").innerHTML = inputText_B10;
+  document.getElementById("s3").innerHTML = inputText_B2a;
+  document.getElementById("s4").innerHTML = inputText_B2;
+};
+var MAX_DIGITS = 64;
+var MAX_BIAS = 64;
+// Ganze Zahl zur Basis 10 in Zweierkomplement und Exzessdarstellung umrechnen
+function calcTen2ExZw(){
+  var num = document.getElementById("number_1").value;
+  var digits = document.getElementById("digits").value;
+  var bias = document.getElementById("bias").value;
+  num = num.trim();
+  digits = digits.trim();
+  bias = bias.trim();
+  // Überprüfung der Eingabe
+  var msg = "";
+  if(1 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
+  if(0 > bias || MAX_BIAS < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";
+  
+  if("" !== msg){
+    alert(msg);
+    return;
+  }
+  
+  // Ergebnis eintragen
+  document.getElementById("number_2").value = calcTen2Ex(digits, bias, num);
+  document.getElementById("number_3").value = calcTen2Zw(digits, num);
+};
+// Dualzahl in der Exzessdarstellung in Zahl zur Basis 10 und in Zweierkomplement umrechnen
+function calcEx2ZwTen(){
+  var num = document.getElementById("number_2").value;
+  var digits = document.getElementById("digits").value;
+  var bias = document.getElementById("bias").value;
+  // Überprüfung der Eingabe
+  
+  // Ergebnis eintragen
+  var num = calcEx2Ten(digits, bias, num);
+  document.getElementById("number_1").value = num;  
+  document.getElementById("number_3").value = calcTen2Zw(digits, num);  
+};
+// Dualahl im Zweierkomplement in Zahl zur Basis 10 und in die Exzessdarstellung umrechnen
+function calcZw2ExTen(){
+  var num = document.getElementById("number_3").value;
+  var digits = document.getElementById("digits").value;
+  var bias = document.getElementById("bias").value;
+  // Überprüfung der Eingabe
+  
+  // Ergebnis eintragen
+  var num = calcZw2Ten(digits, num);
+  document.getElementById("number_1").value = num;
+  document.getElementById("number_2").value = calcTen2Ex(digits, bias, num);
+  
 };
 
+
+// Ganze Zahl zur Basis 10 in Zweierkomplement umrechnen
+function calcTen2Zw(digits, num){
+  var result = "0";
+  return result;  
+};
+
+// Ganze Zahl zur Basis 10 in Exzessdarstellung umrechnen
+function calcTen2Ex(digits, bias, num){
+  var result = "1";
+  return result; 
+};
+
+// Zahl aus der Exzessdarstellung umrechnen in Basis 10 
+function calcEx2Ten(digits, bias, num){
+  var result = "2";
+  return result;  
+};
+
+// Zahl aus dem Zweierkomplement umrechen in die Basis 10
+function calcZw2Ten(digits, num){
+  var result = "3";
+  return result;
+};
+
+// Funktionen zur Umrechnung von Basis B1 in Basis B2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 function formB2B() {
   var comment = '<h2>Geben Sie im grünen Feld die Ausgangsbasis [2-'+B_MAX+'] und die umzurechnende Dezimalzahl ein. \
     Im roten Feld geben Sie die Zielbasis [2-'+B_MAX+'] ein. Drücken Sie auf \"Umrechen\". Dann erscheint im roten Feld\
@@ -64,6 +158,7 @@ function formB2B() {
   document.getElementById("s1").innerHTML = comment;
   document.getElementById("s2").innerHTML = inputText;
   document.getElementById("s3").innerHTML = outputText;
+  document.getElementById("s4").style.visibility = "hidden";
 };
 
 function calcB2B(){

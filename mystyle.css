@@ -6,6 +6,9 @@ box-shadow: 10px 10px 5px #888888;margin-bottom:5px;}
 box-shadow: 10px 10px 5px #888888;margin-bottom:5px;}
 #s3{background-color:red; width:730px;padding:15px; border-radius: 0px 10px 10px 10px;
 box-shadow: 10px 10px 5px #888888;margin-top:5px;}
+#s4{background-color:cyan; width:730px;padding:15px; border-radius: 0px 10px 10px 10px;
+box-shadow: 10px 10px 5px #888888;margin-top:5px;}
+
 /*Element-Selector for h1*/
 h1{color: #000;}
 
@@ -13,7 +16,18 @@ h1{color: #000;}
 #number_1{padding:5px; margin:5px; }
 #bt_calc{ padding:5px; margin:5px;}
 #base_2{padding:5px; margin:5px; }
-#number_2{padding:5px; margin:5px; }
+#number_2{padding:5px; margin:5px;}
+
+#bias{padding:5px; margin:5px; }
+#digits{padding:5px; margin:5px;}
+#base_2{padding:5px; margin:5px; }
+#number_1{padding:5px; margin:5px;}
+#number_2{padding:5px; margin:5px;}
+#number_3{padding:5px; margin:5px;}
+#bt_calc_1{ padding:5px; margin:5px;}
+#bt_calc_2{ padding:5px; margin:5px;}
+#bt_calc_3{ padding:5px; margin:5px;}
+
 
 #sel_ex{width:235px; padding:5px; margin:5px; height:202px;}
 #text_ex{font-family:Courier; height:150px; width:500px; padding:5px; margin:5px;resize: none;}
