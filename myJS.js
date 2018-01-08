@@ -64,20 +64,23 @@ function formNegativTen2Two() {
   document.getElementById("s3").innerHTML = inputText_B2a;
   document.getElementById("s4").innerHTML = inputText_B2;
 };
-var MAX_DIGITS = 64;
-var MAX_BIAS = 64;
+var MAX_DIGITS = 32;
+var MAX_BIAS = 32;
 // Ganze Zahl zur Basis 10 in Zweierkomplement und Exzessdarstellung umrechnen
 function calcTen2ExZw(){
   var num = document.getElementById("number_1").value;
   var digits = document.getElementById("digits").value;
   var bias = document.getElementById("bias").value;
-  num = num.trim();
-  digits = digits.trim();
-  bias = bias.trim();
+  num = Number.parseInt(num.trim(),10);
+  digits = Number.parseInt(digits.trim(),10);
+  bias = Number.parseInt(bias.trim(),10);
   // Überprüfung der Eingabe
   var msg = "";
-  if(1 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
-  if(0 > bias || MAX_BIAS < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";
+  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
+  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";
+  if(-Math.pow(2,digits-1) > num || (Math.pow(2,digits-1)-1) < num) msg = msg + "Zahl und Stellenzahl ergeben keine gültige Kombination! -2^(s-1) <= zahl <= 2^(s-1)-1\n";
+  if(0 > bias + num ) msg = msg + "Unzulässige Kombination aus Zahl und Bias! Die Summe muss >= 0 sein!\n";
+  if(Math.pow(2,digits)-1 < bias + num ) msg = msg + "Unzulässige Kombination aus Zahl, Bias und Stellenzahl! (Zahl+Bias) < 2^Stellenzahl sein!\n";
   
   if("" !== msg){
     alert(msg);
@@ -93,49 +96,102 @@ function calcEx2ZwTen(){
   var num = document.getElementById("number_2").value;
   var digits = document.getElementById("digits").value;
   var bias = document.getElementById("bias").value;
+  num = num.trim();
+  digits = Number.parseInt(digits.trim(),10);
+  bias = Number.parseInt(bias.trim(),10); 
   // Überprüfung der Eingabe
+  var msg = "";
+  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
+  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";  
+  if(num.length > digits) msg = msg + "Die Zahl hat mehr Stellen als erlaubt!\n";
   
+  if("" !== msg){
+    alert(msg);
+    return;
+  }
   // Ergebnis eintragen
   var num = calcEx2Ten(digits, bias, num);
   document.getElementById("number_1").value = num;  
-  document.getElementById("number_3").value = calcTen2Zw(digits, num);  
+  // Evtl. sind Exzess und Zweierkomplement nicht kompatibel: bias != 2^(n-1)
+  document.getElementById("number_3").value = calcTen2Zw(digits, Number.parseInt(num));  
 };
 // Dualahl im Zweierkomplement in Zahl zur Basis 10 und in die Exzessdarstellung umrechnen
 function calcZw2ExTen(){
   var num = document.getElementById("number_3").value;
   var digits = document.getElementById("digits").value;
   var bias = document.getElementById("bias").value;
+  num = num.trim();
+  digits = Number.parseInt(digits.trim(),10);
+  bias = Number.parseInt(bias.trim(),10);  
   // Überprüfung der Eingabe
+  var msg = "";
+  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
+  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";  
+  if(num.length > digits) msg = msg + "Die Zahl hat mehr Stellen als erlaubt!\n";
   
+  if("" !== msg){
+    alert(msg);
+    return;
+  } 
   // Ergebnis eintragen
-  var num = calcZw2Ten(digits, num);
+  var num = calcZw2Ten(digits, num); // int, char
   document.getElementById("number_1").value = num;
-  document.getElementById("number_2").value = calcTen2Ex(digits, bias, num);
-  
+   // Evtl. sind Exzess und Zweierkomplement nicht kompatibel: bias != 2^(n-1)
+  document.getElementById("number_2").value = calcTen2Ex(digits, bias, Number.parseInt(num));
 };
 
 
 // Ganze Zahl zur Basis 10 in Zweierkomplement umrechnen
 function calcTen2Zw(digits, num){
   var result = "0";
+  if(0>num){
+    result = calcTen2B("2", (Math.abs(num)-1).toString());
+    result = neg(result);
+    for(var i = result.length; i < digits; ++i){
+      result = ("1").concat(result);
+    }
+  }
+  else{
+    result = calcTen2B("2", num.toString());
+  }
   return result;  
 };
+
+function neg(d){
+  var str = d.replace(/1/g, "2");
+  str = str.replace(/0/g, "1");
+  str = str.replace(/2/g, "0");
+  return str;
+}
 
 // Ganze Zahl zur Basis 10 in Exzessdarstellung umrechnen
 function calcTen2Ex(digits, bias, num){
   var result = "1";
+  num = num + bias;
+  result = calcTen2B("2", num.toString());
   return result; 
 };
 
 // Zahl aus der Exzessdarstellung umrechnen in Basis 10 
 function calcEx2Ten(digits, bias, num){
-  var result = "2";
+  var result = "0";
+  result = calcB2Ten("2",num);
+  result = (Number.parseInt(result) - bias).toString();
   return result;  
 };
 
 // Zahl aus dem Zweierkomplement umrechen in die Basis 10
 function calcZw2Ten(digits, num){
-  var result = "3";
+  var result = "0";
+  if(num.length === digits && num.charAt(0) === "1"){ // negative Zahl
+    result = neg(num);   
+    result = calcB2Ten("2", result);
+    var num2 = -1 * (Number.parseInt(result)+1);
+    result = num2.toString();
+  }
+  else{
+    result = calcB2Ten("2", num);
+  }
   return result;
 };
 
@@ -247,7 +303,7 @@ function calcB2Ten(B, num){
 }
 
 function calcTen2B(B, num){
-  if("10" === B) return num;
+  if("10" === B || "0" === num) return num;
   var unum = num; // Vorzeichenlose Zahl
   var dot;        // Position des Dezimaltrennzeichens
   var vor, nach;  // Vor- und Nachkommaanteil
