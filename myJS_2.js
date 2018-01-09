@@ -68,9 +68,9 @@ function calcTen2ExZw(){
   var num = document.getElementById("number_1").value;
   var digits = document.getElementById("digits").value;
   var bias = document.getElementById("bias").value;
-  num = Number.parseInt(num.trim(),10);
-  digits = Number.parseInt(digits.trim(),10);
-  bias = Number.parseInt(bias.trim(),10);
+  num = parseInt(num.trim(),10);
+  digits = parseInt(digits.trim(),10);
+  bias = parseInt(bias.trim(),10);
   // Überprüfung der Eingabe
   var msg = "";
   if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
@@ -99,8 +99,8 @@ function calcEx2ZwTen(){
   var digits = document.getElementById("digits").value;
   var bias = document.getElementById("bias").value;
   num = num.trim();
-  digits = Number.parseInt(digits.trim(),10);
-  bias = Number.parseInt(bias.trim(),10); 
+  digits = parseInt(digits.trim(),10);
+  bias = parseInt(bias.trim(),10); 
   // Überprüfung der Eingabe
   var msg = "";
   if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
@@ -115,9 +115,9 @@ function calcEx2ZwTen(){
   var num = calcEx2Ten(bias, num);
   document.getElementById("number_1").value = num;  
   // Evtl. sind Exzess und Zweierkomplement nicht kompatibel: bias != 2^(n-1)
-  var limit = Math.pow(2,Number.parseInt(digits)-1);
-  if(-limit <= Number.parseInt(num) && Number.parseInt(num) <  limit ){
-    document.getElementById("number_3").value = calcTen2Zw(digits, Number.parseInt(num));  
+  var limit = Math.pow(2,parseInt(digits)-1);
+  if(-limit <= parseInt(num) && parseInt(num) <  limit ){
+    document.getElementById("number_3").value = calcTen2Zw(digits, parseInt(num));  
   }
   else{
     alert("Die Zahl "+num+" konnte nicht ins Zweierkomplement umgerechnet werden!");
@@ -135,8 +135,8 @@ function calcZw2ExTen(){
   var digits = document.getElementById("digits").value;
   var bias = document.getElementById("bias").value;
   num = num.trim();
-  digits = Number.parseInt(digits.trim(),10);
-  bias = Number.parseInt(bias.trim(),10);  
+  digits = parseInt(digits.trim(),10);
+  bias = parseInt(bias.trim(),10);  
   // Überprüfung der Eingabe
   var msg = "";
   if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
@@ -151,8 +151,8 @@ function calcZw2ExTen(){
   var num = calcZw2Ten(digits, num); // int, char
   document.getElementById("number_1").value = num;
    // Evtl. sind Exzess und Zweierkomplement nicht kompatibel: bias != 2^(n-1)
-  if(-Number.parseInt(bias) <= Number.parseInt(num)){
-    document.getElementById("number_2").value = calcTen2Ex(bias, Number.parseInt(num));
+  if(-parseInt(bias) <= parseInt(num)){
+    document.getElementById("number_2").value = calcTen2Ex(bias, parseInt(num));
   }
   else{
     alert("Die Zahl "+num+" konnte nicht in die Exzessdarstellung umgerechnet werden!");
@@ -215,7 +215,7 @@ function calcTen2Ex(bias, num){
 function calcEx2Ten(bias, num){
   var result = "0";
   result = calcB2Ten("2",num);
-  result = (Number.parseInt(result) - bias).toString();
+  result = (parseInt(result) - bias).toString();
   return result;  
 };
 
@@ -230,7 +230,7 @@ function calcZw2Ten(digits, num){
   if(num.length === digits && num.charAt(0) === "1"){ // negative Zahl
     result = neg(num);   
     result = calcB2Ten("2", result);
-    var num2 = -1 * (Number.parseInt(result)+1);
+    var num2 = -1 * (parseInt(result)+1);
     result = num2.toString();
   }
   else{
