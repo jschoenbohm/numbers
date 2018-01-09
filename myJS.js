@@ -7,16 +7,18 @@
  \version   1.0.0 <b>Datum:</b> 2017-10-21
  \brief     Funktionen für die Zahlenumrechnung
 	
-\details	
+\details	Rechnet Festkommazahlen von einer Basis in eine zweite Basis um.
 					
 */
 "use strict";
 
+// Globale Variablen
 var map={"0":0, "1":1, "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "A":10, "B":11, "C":12, "D":13, "E":14, "F":15, "G":17,"H":18,"I":19};
 var remap=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I"];
-var B_MAX = 19;
-/*
-  \brief  Initialisiert die Webseite mit der Navigationsleiste
+var B_MAX = 19; //<! Maximal erlaubte Basis
+
+/*! \fn init()
+    \brief  Initialisiert die Webseite mit der Navigationsleiste
 */
 function init()
 {
@@ -27,175 +29,9 @@ function init()
   formB2B();
 }
 
-function formNegativTen2Two() {
-  var comment = '<h2>Geben Sie die umzurechnende Zahl, die Stellenzahl und den Bias-Wert ein. \
-    Anschließend drücken Sie auf die Berechnen-Schaltfläche neben der Zahl.\
-    </h2>';
-  var partBaseText = 'min="2" max="'+B_MAX+'" pattern="[2-9]|1[0-9]" size="2" />';
-  
-  var inputText_B10 = 
-    '<h3>Zahl zur Basis 10</h3>' +
-    '<label for="number_1">Zahl</label>\
-    <input type="text" id="number_1" name="number_1" value="0" pattern="-[0-9]+|[0-9]+" />\
-    <input type="button" id="bt_calc_1" name="bt_calc_1" onclick="calcTen2ExZw()" value="Berechnen" />';
-    
-  var inputText_B2a =
-    '<label for="digits">Stellenzahl</label>\
-    <input type="text" id="digits" name="digits" value="8"\
-    min="2" max="64" pattern="[2-9]|[1-5][0-9]|6[0-4]" size="2"/>' +
-    '<label for="bias" style="margin-left:5px;">Bias</label>\
-    <input type="text" id="bias" name="bias" value="4"\
-    min="0" max="128" pattern="[0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]" size="3"/>';
-  
-  var inputText_B2 = 
-    '<h3>Zahlen zur Basis 2</h3>' +
-    '<h4>Exzessdarstellung</h4>' +
-    '<label for="number_2">Zahl</label>\
-    <input type="text" id="number_2" name="number_2" value="0" pattern="-[0-1]+|[0-1]+"/>' + 
-    '<input type="button" id="bt_calc_2" name="bt_calc_2" onclick="calcEx2ZwTen()" value="Berechnen" />' +
-    '<h4>Zweierkomplement</h4>' +
-    '<label for="number_3">Zahl</label>\
-    <input type="text" id="number_3" name="number_3" value="0" pattern="-[0-1]+|[0-1]+"/>' +
-    '<input type="button" id="bt_calc_3" name="bt_calc_3" onclick="calcZw2ExTen()" value="Berechnen" />'
-    ;
-  document.getElementById("s4").style.visibility = "visible";
-  document.getElementById("s1").innerHTML = comment;
-  document.getElementById("s2").innerHTML = inputText_B10;
-  document.getElementById("s3").innerHTML = inputText_B2a;
-  document.getElementById("s4").innerHTML = inputText_B2;
-};
-var MAX_DIGITS = 32;
-var MAX_BIAS = 32;
-// Ganze Zahl zur Basis 10 in Zweierkomplement und Exzessdarstellung umrechnen
-function calcTen2ExZw(){
-  var num = document.getElementById("number_1").value;
-  var digits = document.getElementById("digits").value;
-  var bias = document.getElementById("bias").value;
-  num = Number.parseInt(num.trim(),10);
-  digits = Number.parseInt(digits.trim(),10);
-  bias = Number.parseInt(bias.trim(),10);
-  // Überprüfung der Eingabe
-  var msg = "";
-  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
-  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";
-  if(-Math.pow(2,digits-1) > num || (Math.pow(2,digits-1)-1) < num) msg = msg + "Zahl und Stellenzahl ergeben keine gültige Kombination! -2^(s-1) <= zahl <= 2^(s-1)-1\n";
-  if(0 > bias + num ) msg = msg + "Unzulässige Kombination aus Zahl und Bias! Die Summe muss >= 0 sein!\n";
-  if(Math.pow(2,digits)-1 < bias + num ) msg = msg + "Unzulässige Kombination aus Zahl, Bias und Stellenzahl! (Zahl+Bias) < 2^Stellenzahl sein!\n";
-  
-  if("" !== msg){
-    alert(msg);
-    return;
-  }
-  
-  // Ergebnis eintragen
-  document.getElementById("number_2").value = calcTen2Ex(digits, bias, num);
-  document.getElementById("number_3").value = calcTen2Zw(digits, num);
-};
-// Dualzahl in der Exzessdarstellung in Zahl zur Basis 10 und in Zweierkomplement umrechnen
-function calcEx2ZwTen(){
-  var num = document.getElementById("number_2").value;
-  var digits = document.getElementById("digits").value;
-  var bias = document.getElementById("bias").value;
-  num = num.trim();
-  digits = Number.parseInt(digits.trim(),10);
-  bias = Number.parseInt(bias.trim(),10); 
-  // Überprüfung der Eingabe
-  var msg = "";
-  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
-  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";  
-  if(num.length > digits) msg = msg + "Die Zahl hat mehr Stellen als erlaubt!\n";
-  
-  if("" !== msg){
-    alert(msg);
-    return;
-  }
-  // Ergebnis eintragen
-  var num = calcEx2Ten(digits, bias, num);
-  document.getElementById("number_1").value = num;  
-  // Evtl. sind Exzess und Zweierkomplement nicht kompatibel: bias != 2^(n-1)
-  document.getElementById("number_3").value = calcTen2Zw(digits, Number.parseInt(num));  
-};
-// Dualahl im Zweierkomplement in Zahl zur Basis 10 und in die Exzessdarstellung umrechnen
-function calcZw2ExTen(){
-  var num = document.getElementById("number_3").value;
-  var digits = document.getElementById("digits").value;
-  var bias = document.getElementById("bias").value;
-  num = num.trim();
-  digits = Number.parseInt(digits.trim(),10);
-  bias = Number.parseInt(bias.trim(),10);  
-  // Überprüfung der Eingabe
-  var msg = "";
-  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
-  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";  
-  if(num.length > digits) msg = msg + "Die Zahl hat mehr Stellen als erlaubt!\n";
-  
-  if("" !== msg){
-    alert(msg);
-    return;
-  } 
-  // Ergebnis eintragen
-  var num = calcZw2Ten(digits, num); // int, char
-  document.getElementById("number_1").value = num;
-   // Evtl. sind Exzess und Zweierkomplement nicht kompatibel: bias != 2^(n-1)
-  document.getElementById("number_2").value = calcTen2Ex(digits, bias, Number.parseInt(num));
-};
-
-
-// Ganze Zahl zur Basis 10 in Zweierkomplement umrechnen
-function calcTen2Zw(digits, num){
-  var result = "0";
-  if(0>num){
-    result = calcTen2B("2", (Math.abs(num)-1).toString());
-    result = neg(result);
-    for(var i = result.length; i < digits; ++i){
-      result = ("1").concat(result);
-    }
-  }
-  else{
-    result = calcTen2B("2", num.toString());
-  }
-  return result;  
-};
-
-function neg(d){
-  var str = d.replace(/1/g, "2");
-  str = str.replace(/0/g, "1");
-  str = str.replace(/2/g, "0");
-  return str;
-}
-
-// Ganze Zahl zur Basis 10 in Exzessdarstellung umrechnen
-function calcTen2Ex(digits, bias, num){
-  var result = "1";
-  num = num + bias;
-  result = calcTen2B("2", num.toString());
-  return result; 
-};
-
-// Zahl aus der Exzessdarstellung umrechnen in Basis 10 
-function calcEx2Ten(digits, bias, num){
-  var result = "0";
-  result = calcB2Ten("2",num);
-  result = (Number.parseInt(result) - bias).toString();
-  return result;  
-};
-
-// Zahl aus dem Zweierkomplement umrechen in die Basis 10
-function calcZw2Ten(digits, num){
-  var result = "0";
-  if(num.length === digits && num.charAt(0) === "1"){ // negative Zahl
-    result = neg(num);   
-    result = calcB2Ten("2", result);
-    var num2 = -1 * (Number.parseInt(result)+1);
-    result = num2.toString();
-  }
-  else{
-    result = calcB2Ten("2", num);
-  }
-  return result;
-};
-
-// Funktionen zur Umrechnung von Basis B1 in Basis B2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*! \fn formB2B()()
+    \brief Erstellt das Formular für die Zahleneingabe.
+*/
 function formB2B() {
   var comment = '<h2>Geben Sie im grünen Feld die Ausgangsbasis [2-'+B_MAX+'] und die umzurechnende Dezimalzahl ein. \
     Im roten Feld geben Sie die Zielbasis [2-'+B_MAX+'] ein. Drücken Sie auf \"Umrechen\". Dann erscheint im roten Feld\
@@ -217,6 +53,11 @@ function formB2B() {
   document.getElementById("s4").style.visibility = "hidden";
 };
 
+/*! \fn calcB2B()
+    \brief Umrechnung von Basis B1 in Basis B2.
+    \detail Liest die Formularfelder aus und initiiert die Berechnung. Anschließend 
+      werden die Ergebnisse eingetragen.
+*/
 function calcB2B(){
   var b1 = document.getElementById("base_1").value;
   var z1 = document.getElementById("number_1").value;
@@ -253,9 +94,14 @@ function calcB2B(){
   /*Umrechnung*/
   var res = calcB2Ten(b1,z1);
   document.getElementById("number_2").value= calcTen2B(b2,res);
-  /*Ausgabe*/
 };
 
+/*! \fn string calcB2Ten(B, num)
+    \brief Umrechnung von Basis B in Basis 10.
+    \param  B   string, Basis, in der num angegeben ist.
+    \param  num string, Zahl, die umgerechnet werden soll.
+    \return string  Zahl in der Basis 10.
+*/
 function calcB2Ten(B, num){
   if("10" === B) return num;
   var unum = num; // Vorzeichenlose Zahl
@@ -302,6 +148,12 @@ function calcB2Ten(B, num){
   return result;
 }
 
+/*! \fn string calcTen2B(B, num)
+    \brief Umrechnung von Basis 10 in Basis B.
+    \param  B   string, Basis, in die \a num umgerechnet werden soll.
+    \param  num string, Zahl, die umgerechnet werden soll.
+    \return string  Zahl in der Basis B.
+*/
 function calcTen2B(B, num){
   if("10" === B || "0" === num) return num;
   var unum = num; // Vorzeichenlose Zahl
