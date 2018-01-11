@@ -24,7 +24,8 @@ function init()
 {
   var out = '\
     <input type="button" value="Umrechnung B1 -> B2" onclick="formB2B()" />\
-    <input type="button" value="Ganze Zahl B10 <-> B2" onclick="formNegativTen2Two()" />';
+    <input type="button" value="Ganze Zahl B10 <-> B2" onclick="formNegativTen2Two()" />\
+    <input type="button" value="IEEE 754" onclick="formIEEE754()" />';
   document.getElementById("navbar").innerHTML = out;
   formB2B();
 }

@@ -13,80 +13,93 @@
 */
 
 // Globale Variablen
-var MAX_DIGITS = 32; //<! Maximale Anzahl von Stellen
-var MAX_BIAS = 32;  //<! Maximaler Wert für den Bias
 
-/*! \fn formNegativTen2Two()
+
+/*! \fn formIEEE754()
     \brief Erstellt das Formular für die Zahleneingabe.
 */
-function formIEEE() {
-  var comment = '<h2>Geben Sie die umzurechnende Zahl, die Stellenzahl und den Bias-Wert ein. \
-    Anschließend drücken Sie auf die Berechnen-Schaltfläche neben der Zahl.\
+function formIEEE754() {
+  var comment = '<h2>Geben Sie die umzurechnende Zahl, die Anzahl \
+  der Bits für die Charakteristik und die Mantisse ein. Anschließend \
+  drücken Sie auf die Berechnen-Schaltfläche neben der Zahl. \
+  Alternativ können Sie die Auswahlboxen anklicken, um die Zahl zu verändern.\
     </h2>';
   var partBaseText = 'min="2" max="'+B_MAX+'" pattern="[2-9]|1[0-9]" size="2" />';
   
   var inputText_B10 = 
     '<h3>Zahl zur Basis 10</h3>' +
-    '<label for="number_1">Zahl</label>\
-    <input type="text" id="number_1" name="number_1" value="0" pattern="-[0-9]+|[0-9]+" />\
-    <input type="button" id="bt_calc_1" name="bt_calc_1" onclick="calcTen2ExZw()" value="Berechnen" />';
+    '<label for="number_ie10">Zahl</label>\
+    <input type="text" id="number_ie10" name="number_ie10" value="0" pattern="-[0-9]+|[0-9]+" />\
+    <input type="button" id="bt_calc_ie10" name="bt_calc_ie10" onclick="calcTen2IEEE()" value="Berechnen" />';
     
   var inputText_B2a =
-    '<label for="digits">Stellenzahl</label>\
-    <input type="text" id="digits" name="digits" value="8"\
-    min="2" max="64" pattern="[2-9]|[1-5][0-9]|6[0-4]" size="2"/>' +
-    '<label for="bias" style="margin-left:5px;">Bias</label>\
-    <input type="text" id="bias" name="bias" value="4"\
-    min="0" max="128" pattern="[0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]" size="3"/>';
-  
-  var inputText_B2 = 
-    '<h3>Zahlen zur Basis 2</h3>' +
-    '<h4>Exzessdarstellung</h4>' +
-    '<label for="number_2">Zahl</label>\
-    <input type="text" id="number_2" name="number_2" value="0" pattern="-[0-1]+|[0-1]+"/>' + 
-    '<input type="button" id="bt_calc_2" name="bt_calc_2" onclick="calcEx2ZwTen()" value="Berechnen" />' +
-    '<h4>Zweierkomplement</h4>' +
-    '<label for="number_3">Zahl</label>\
-    <input type="text" id="number_3" name="number_3" value="0" pattern="-[0-1]+|[0-1]+"/>' +
-    '<input type="button" id="bt_calc_3" name="bt_calc_3" onclick="calcZw2ExTen()" value="Berechnen" />'
-    ;
+    '<label for="bit_char">Bits Charakteristik</label>\
+    <input type="text" id="bit_char" name="bit_char" onchange="drawIEEE()" value="8"\
+    min="2" max="11" pattern="[2-9]|1[0-1]" size="2"/>' +
+    '<label for="bit_mant" style="margin-left:5px;">Bits Mantisse</label>\
+    <input type="text" id="bit_mant" name="bit_mant" onchange="drawIEEE()" value="23"\
+    min="2" max="52" pattern="[2-9]|[1-4][0-9]|5[0-1]" size="2"/>';
+
   document.getElementById("s4").style.visibility = "visible";
   document.getElementById("s1").innerHTML = comment;
   document.getElementById("s2").innerHTML = inputText_B10;
   document.getElementById("s3").innerHTML = inputText_B2a;
-  document.getElementById("s4").innerHTML = inputText_B2;
+  drawIEEE();
 };
 
+/*! \fn drawIEEE()
+    \brief Erstellt das Feld mit den Checkboxen.
+*/
+function drawIEEE()
+{
+  var bits_c = document.getElementById("bit_char").value;
+  var bits_m = document.getElementById("bit_mant").value;
+  var inputText_B2 = 
+    '<h3>Bitdarstellung in Anlehnung an IEEE 754</h3>' +
+    '<label for="number_2">Zahl</label>' +
+    '<input type="checkbox" id="check_v" class="checkIEEE" name="check_v" onchange="calcIEEE2Ten()" visibility="visible" status="unchecked"/> | ' +  generateCheckboxes("c", bits_c) + ' | ' + generateCheckboxes("m", bits_m);
+    document.getElementById("s4").innerHTML = inputText_B2;
+    calcTen2IEEE(); // Zustand aktualisieren
+}
 
+/*! \fn generateCheckboxes(type, bits)
+    \brief  Erzeugt die Checkboxen für die Charakteristik oder die Mantisse.
+    \param  type  "m" für die Mantisse und "c" für die Charakteristik.
+    \param  bits  Anzahl der erforderlichen Checkboxen.
+    \return String mit dem erzeugenden HTML-Code
+*/
+function generateCheckboxes(type, bits){
+    var i;
+    var str="";
+    for(i=0; i<bits; ++i){
+      str = str + 
+      '<input type="checkbox" id="check_"' + type + i +
+      ' class="checkIEEE" name="check_"' + type + i +
+      ' onchange="calcIEEE2Ten()" visibility="visible" status="unchecked"/>';
+    }
+    return str;
+}
 
-/*! \fn calc()
-    \brief Umrechnung von Basis 10 in Zweierkomplement und Exzessdarstellung.
+/*! \fn calcIEEE2Ten()
+    \brief Umrechnung IEEE 754 in Basis 10.
     \detail Liest die Formularfelder aus und initiiert die Berechnung. Anschließend 
       werden die Ergebnisse eingetragen.
 */
-function calc(){
-  var num = document.getElementById("number_1").value;
-  var digits = document.getElementById("digits").value;
-  var bias = document.getElementById("bias").value;
-  num = parseInt(num.trim(),10);
-  digits = parseInt(digits.trim(),10);
-  bias = parseInt(bias.trim(),10);
-  // Überprüfung der Eingabe
-  var msg = "";
-  if(2 > digits || MAX_DIGITS < digits) msg = msg + "Falscher Wert für die Stellenzahl!\n";
-  if(0 > bias || Math.pow(2,digits) < bias) msg = msg + "Falscher Wert für den Bias Wert!\n";
-  if(-Math.pow(2,digits-1) > num || (Math.pow(2,digits-1)-1) < num) msg = msg + "Zahl und Stellenzahl ergeben keine gültige Kombination! -2^(s-1) <= zahl <= 2^(s-1)-1\n";
-  if(0 > bias + num ) msg = msg + "Unzulässige Kombination aus Zahl und Bias! Die Summe muss >= 0 sein!\n";
-  if(Math.pow(2,digits)-1 < bias + num ) msg = msg + "Unzulässige Kombination aus Zahl, Bias und Stellenzahl! (Zahl+Bias) < 2^Stellenzahl sein!\n";
-  
-  if("" !== msg){
-    alert(msg);
-    return;
-  }
-  
-  // Ergebnis eintragen
-  document.getElementById("number_2").value = calcTen2Ex(bias, num);
-  document.getElementById("number_3").value = calcTen2Zw(digits, num);
+function calcIEEE2Ten()
+{
+  alert("called");
+}
+
+/*! \fn calcTen2IEEE()
+    \brief Umrechnung von Basis 10 in IEEE754.
+    \detail Liest die Formularfelder aus und initiiert die Berechnung. Anschließend 
+      werden die Ergebnisse eingetragen.
+*/
+function calcTen2IEEE(){
+  var bits_c = document.getElementById("bit_char").value;
+  var bits_m = document.getElementById("bit_mant").value;
+  var num = document.getElementById("number_ie10").value;
+  alert("C: " + bits_c + " M: " + bits_m + " Z: " + num);
 };
 
 
