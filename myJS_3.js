@@ -285,7 +285,40 @@ function calcTen2IEEE(){
       else
         document.getElementById(id).checked = false;     
     }
-    // Aufrunden??
+    // Aufrunden
+    var fertig = false;
+    id_temp = "check_m";
+    var N = bits_m-1;
+    if(mantisse.charAt(2+bits_m) === "1"){
+      while(!fertig && N >= 0){
+        id = id_temp + N;
+        if(document.getElementById(id).checked === true){
+          document.getElementById(id).checked = false;
+          --N;
+        }
+        else{
+          document.getElementById(id).checked = true;
+          fertig = true;
+        }
+      }
+      if(!fertig){
+        // Alle M-Bits sind auf 0 gerundet, dann erfolgt ein Übertrag auf das nächste C-Bit
+        id_temp = "check_c";
+        N = bits_c-1;
+        while(!fertig && N >= 0){
+          id = id_temp + N;
+          if(document.getElementById(id).checked === true){
+            document.getElementById(id).checked = false;
+            --N;
+          }
+          else{
+            document.getElementById(id).checked = true;
+            fertig = true;
+          }
+        }
+
+      }
+    }
   }
   calcIEEE2Ten();
 };
