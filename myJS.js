@@ -94,7 +94,11 @@ function calcB2B(){
   }
   /*Umrechnung*/
   var res = calcB2Ten(b1,z1);
-  document.getElementById("number_2").value= calcTen2B(b2,res);
+  var num_b2 = calcTen2B(b2,res);
+  var pos_d = num_b2.search(/\./);
+  if(pos_d >= 0)
+    num_b2 = num_b2.substring(0,pos_d + 16);
+  document.getElementById("number_2").value= num_b2;
 };
 
 /*! \fn string calcB2Ten(B, num)
@@ -189,7 +193,7 @@ function calcTen2B(B, num){
   // Umrechnug des Nachkommaanteils
   b1 = 0; // Stellenzähler, es werden max. 16 Nachkommastellen ausgegeben! 
   r1 = nach;
-  while(r1 !== 0 && b1 <= 16){
+  while(r1 !== 0 && b1 <= 53){
     r1 = r1 * B;
     r2 = Math.floor(r1);
     r1 = r1 - r2;

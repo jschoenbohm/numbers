@@ -29,8 +29,7 @@ function formIEEE754() {
     '<h3>Zahl zur Basis 10</h3>' +
     '<label for="number_ie10">Zahl</label>\
     <input type="text" id="number_ie10" name="number_ie10" value="0" style="padding-left:5px;" size="25"/>\
-    <input type="button" id="bt_calc_ie10" name="bt_calc_ie10" onclick="calcTen2IEEE()" value="Berechnen" style="margin-right:10px;" />'+
-    '<b id="denorm" name="denorm" style="visibility:hidden;"><b>denormalisiert</b></b>';
+    <input type="button" id="bt_calc_ie10" name="bt_calc_ie10" onclick="calcTen2IEEE()" value="Berechnen" style="margin-right:10px;" />';
     
   var inputText_B2a =
     '<label for="bit_char">Bits Charakteristik</label>\
@@ -77,7 +76,12 @@ function drawIEEE()
   var inputText_B2 = 
     '<h3>Bitdarstellung in Anlehnung an IEEE 754</h3>' +
     '<label for="number_2">Zahl</label>' +
-    '<input type="checkbox" id="check_v" class="checkIEEE" name="check_v" onchange="calcIEEE2Ten()"/> | ' +  generateCheckboxes("c", bits_c) + ' | ' + generateCheckboxes("m", bits_m);
+    '<input type="checkbox" id="check_v" class="checkIEEE" name="check_v" onchange="calcIEEE2Ten()"/> | ' +  generateCheckboxes("c", bits_c) + ' | ' + generateCheckboxes("m", bits_m)
+    +
+    '<div style="margin-top:15px;"><label for="number_ie2" >Darstellung als double: </label>' +
+    '<i id="number_ie2" name="number_ie2" style="padding-left:10px;padding-right:10px;">0</i>' + 
+    '<b id="denorm" name="denorm" style="visibility:hidden;">denormalisiert</b></div>';
+    
     document.getElementById("s4").innerHTML = inputText_B2;
     document.getElementById("bias_ie").value = Math.pow(2,bits_c-1)-1;
     document.getElementById("bit_char_h").value = bits_c;
@@ -156,29 +160,32 @@ function calcIEEE2Ten()
   
   if(denorm === true && num === 0)
   { // Wert ist 0
-    document.getElementById("number_ie10").value = "0";
+    document.getElementById("number_ie2").innerHTML = "0";
+    document.getElementById("denorm").style.visibility = "hidden";
   }
   else{
     if(infNaN === true && num === 0){ // Infinitiy
       if(sign === 1)
-        document.getElementById("number_ie10").value = "+ Infinity";
+        document.getElementById("number_ie2").innerHTML = "+ Infinity";
       else
-        document.getElementById("number_ie10").value = "- Infinity";
+        document.getElementById("number_ie2").innerHTML = "- Infinity";
+      document.getElementById("denorm").style.visibility = "hidden";
     }
     else
     {
       if(infNaN === true && num !== 0){ // NaN
-        document.getElementById("number_ie10").value = "NaN";
+        document.getElementById("number_ie2").innerHTML = "NaN";
+        document.getElementById("denorm").style.visibility = "hidden";
       }
       else{
         if(denorm === true)
         { // denormalisierte Zahl
-          document.getElementById("number_ie10").value = (sign * num * Math.pow(2, 1-bias)).toString();
+          document.getElementById("number_ie2").innerHTML = (sign * num * Math.pow(2, 1-bias)).toString();
           document.getElementById("denorm").style.visibility = "visible";
         }
         else
         { // reelle Zahl ohne Besonderheiten
-          document.getElementById("number_ie10").value = (sign * num * Math.pow(2, (expo-bias))).toString();
+          document.getElementById("number_ie2").innerHTML = (sign * num * Math.pow(2, (expo-bias))).toString();
           document.getElementById("denorm").style.visibility = "hidden";
         }
       }
@@ -196,37 +203,91 @@ function calcTen2IEEE(){
   var bits_m = document.getElementById("bit_mant").value;
   var bias = document.getElementById("bias_ie").value;
   var num = document.getElementById("number_ie10").value;
-  var vor, nach;
-  // Eingabekontrolle
-  
-  // Vorzeichen
-  var sign;
-  if(num*1.0 > 0){
-    sign = 1;
-    num = num * 1.0;
-  }
-  else{
+  num = num.trim();
+  var sign = 1;
+  // Vorzeichen ermitteln und entfernen (log() mit negativer Zahl)
+  if(num.charAt(0) === "-"){
     sign = -1;
-    num = num * -1.0;
+    num = num.substring(1,num.length);
+  }
+  if(num.charAt(0) === "+"){
+    num = num.substring(1,num.length);
   }
 
-  vor = Math.floor(num);
-  nach = num - vor;
-  
-  var expo = calcTen2B("2", vor.toString());
-  // expo.length = Anzahl Stellen n -> n-1 = Exponent
-  
-  var char_str = calcTen2Ex(bias, vor);
-  alert("Char: " + char_str);
-  /*alert("C: " + bits_c + " M: " + bits_m + " Z: " + num);
-  
-  if(
-  document.getElementById("check_v").checked  === true){
-    document.getElementById("check_v").checked = false;
-  }else{
-    document.getElementById("check_v").checked = true;
+  // Format von num prüfen und in x*2^y umwandeln
+  var expo_10 = "";
+  var pos_e = num.search(/e/i);
+  if(0 <= pos_e){
+    expo_10 = parseInt(num.substring(pos_e+1, num.length),10);
+    num = parseFloat(num.substring(0,pos_e));
   }
-  */
+  else{
+    expo_10 = 0;
+    num = parseFloat(num);
+  }
+  if(0 === num) return;
+  var y1 = Math.floor(Math.log(num)/Math.LN2); // Zweierpotenz für die Zahl ohne 10^n
+  var y2 = Math.floor(Math.log(Math.pow(10,expo_10))/Math.LN2); // Zweierpotenz von 10^n
+  var num1 = num / Math.pow(2,y1);
+  var num2 = Math.pow(10,expo_10) / Math.pow(2,y2);
+  var expo_2 = y1+y2;
+  var num4 = num1;
+  if(num2 !== 0){
+    var num3 = num1 * num2;
+    var y3 = Math.floor(Math.log(num3)/Math.LN2);
+    num4 = num3 / Math.pow(2,y3);
+    expo_2 = expo_2+y3;
+  }
+  
+  alert("Zahl: "+ num4 + " * 2^" + expo_2);
+  
+  var mantisse = calcTen2B("2", num4.toString());
+  alert(mantisse);
+  
+  // Spezialfälle vorher abfangen
+  bias = parseInt(bias,10);
+  bits_c = parseInt(bits_c,10);
+  bits_m = parseInt(bits_m,10);
+  // expo_2 größer als bias
+  if(expo_2 > bias){
+    // +-Inf
+  }
+  // expo_2 kleiner als -bias
+  if(expo_2 < -bias){
+    // denormalisiert oder 0
+    
+  }
+  // alle anderen Fälle
+  if(-bias <= expo_2 && expo_2 <= bias){
+    var char_str = calcTen2Ex(bias, expo_2);
+    var id_temp = "check_c";
+    var id = "";
+    alert("Char: " + char_str);
+    for(var i = 0; i < bits_c; ++i){
+      id = id_temp + (bits_c-1-i);
+      if(char_str.charAt(char_str.length-1-i) === "1"){
+        document.getElementById(id).checked = true;
+      }
+      else
+        document.getElementById(id).checked = false;
+    }
+    // Mantisse eintragen (num4)
+    id_temp = "check_m";
+    id = "";
+    var pos_d = mantisse.search(/\./);
+    for(var i = 0; i < bits_m; ++i){
+      id = id_temp + i;
+      if(pos_d >= 0 && i < mantisse.length-pos_d){
+        if(mantisse.charAt(pos_d+1+i) === "1"){
+          document.getElementById(id).checked = true;
+        }
+      }
+      else
+        document.getElementById(id).checked = false;     
+    }
+    // Aufrunden??
+  }
+  calcIEEE2Ten();
 };
 
 
