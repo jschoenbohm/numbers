@@ -43,10 +43,22 @@ function formIEEE754() {
     '<input type="text" id="bit_char_h" name="bit_char_h" style="visibility:hidden;" value="8" readonly/>'+
     '<input type="text" id="bit_mant_h" name="bit_mant_h" style="visibility:hidden;" value="23" readonly/>';
 
+  var inputText_Testfall = 'Charakteristik: 4, Mantisse: 4<p><table>\
+  <tr><th>Dezimal</th><th>Mantisse</th><th>Exponent</th><th>Gerundet</th></tr>\
+  <tr><td>252</td> <td>1.1111|1</td> <td>7</td> <td>Inf</td></tr>\
+  <tr><td>0.49609375</td> <td>1.1111|1</td> <td>-2</td> <td>0.5</td></tr>\
+  <tr><td>0.3046875</td> <td>1.0011|1</td> <td>-2</td> <td>0.3125</td></tr>\
+  <tr><td>0.314453125</td> <td>1.0100|0</td> <td>-2</td> <td>0.3125</td></tr>\
+  <tr><td>0.00390625</td> <td>0.0100|0</td> <td>-6</td> <td>0.00390625</td></tr>\
+  <tr><td>0.00537109375</td> <td>0.0101|1</td> <td>-6</td> <td>0.005859375</td></tr>\
+  <tr><td>0.0009765625</td> <td>0.0001|0</td> <td>-6</td> <td>0.0009765625</td></tr>\
+  </table>';
   document.getElementById("s4").style.visibility = "visible";
   document.getElementById("s1").innerHTML = comment;
   document.getElementById("s2").innerHTML = inputText_B10;
   document.getElementById("s3").innerHTML = inputText_B2a;
+  document.getElementById("s5").innerHTML = inputText_Testfall;
+  document.getElementById("s5").style.visibility = "hidden";
   drawIEEE();
 };
 
@@ -203,6 +215,8 @@ function calcTen2IEEE(){
   var bits_m = document.getElementById("bit_mant").value;
   var bias = document.getElementById("bias_ie").value;
   var num = document.getElementById("number_ie10").value;
+  var id_temp;
+  var id;
   num = num.trim();
   var sign = 1;
   // Vorzeichen ermitteln und entfernen (log() mit negativer Zahl)
@@ -225,7 +239,23 @@ function calcTen2IEEE(){
     expo_10 = 0;
     num = parseFloat(num);
   }
-  if(0 === num) return;
+  
+  // Die Zahl 0
+  if(0 === num){
+    id_temp = "check_c";     
+    for(var i = 0; i < bits_c; ++i){
+      id = id_temp + (bits_c-1-i);
+        document.getElementById(id).checked = false;
+    }   
+    id_temp = "check_m";   
+    for(var i = 0; i < bits_m; ++i){
+      id = id_temp + (bits_m-1-i);
+        document.getElementById(id).checked = false;
+    } 
+    document.getElementById("number_ie2").innerHTML = "0";
+    return;
+  } 
+  
   var y1 = Math.floor(Math.log(num)/Math.LN2); // Zweierpotenz für die Zahl ohne 10^n
   var y2 = Math.floor(Math.log(Math.pow(10,expo_10))/Math.LN2); // Zweierpotenz von 10^n
   var num1 = num / Math.pow(2,y1);
@@ -239,18 +269,14 @@ function calcTen2IEEE(){
     expo_2 = expo_2+y3;
   }
   
-  alert("Zahl: "+ num4 + " * 2^" + expo_2);
-  
   var mantisse = calcTen2B("2", num4.toString());
-  alert(mantisse);
   
   // Spezialfälle vorher abfangen
   bias = parseInt(bias,10);
   bits_c = parseInt(bits_c,10);
   bits_m = parseInt(bits_m,10);
-  var id;
-  var id_temp;
-  // expo_2 größer als bias
+  
+  // expo_2 größer als bias => Inf oder NaN
   if(expo_2 > bias){
     // +-Inf
     id_temp = "check_c";
@@ -264,39 +290,67 @@ function calcTen2IEEE(){
       document.getElementById(id).checked = false;
     }
   }
-  // expo_2 kleiner als -bias
-  if(expo_2 < -bias){
-    // denormalisiert oder 0
-    
-  }
-  // alle anderen Fälle
-  if(-bias <= expo_2 && expo_2 <= bias){
-    var char_str = calcTen2Ex(bias, expo_2);
-    id_temp = "check_c";
-    id = "";
-    alert("Char: " + char_str);
-    for(var i = 0; i < bits_c; ++i){
-      id = id_temp + (bits_c-1-i);
-      if(char_str.charAt(char_str.length-1-i) === "1"){
-        document.getElementById(id).checked = true;
+  else{
+    // expo_2 kleiner als -bias => denormalisiert oder 0
+    if(expo_2 <= -bias){
+      var expo_denorm = expo_2;
+      //alert("a " + mantisse);
+      mantisse = mantisse.substring(2,mantisse.length);
+      mantisse = ("1").concat(mantisse);
+      //expo_denorm = expo_denorm+1;
+      while(expo_denorm < -bias){
+        mantisse = ("0").concat(mantisse);
+        expo_denorm = expo_denorm+1;        
       }
-      else
-        document.getElementById(id).checked = false;
-    }
-    // Mantisse eintragen (num4)
-    id_temp = "check_m";
-    id = "";
-    var pos_d = mantisse.search(/\./);
-    for(var i = 0; i < bits_m; ++i){
-      id = id_temp + i;
-      if(pos_d >= 0 && i < mantisse.length-pos_d){
-        if(mantisse.charAt(pos_d+1+i) === "1"){
+      mantisse = ("0.").concat(mantisse);
+      id_temp = "check_c";     
+      for(var i = 0; i < bits_c; ++i){
+        id = id_temp + (bits_c-1-i);
+          document.getElementById(id).checked = false;
+      } 
+      // Mantisse eintragen
+      id_temp = "check_m";
+      var pos_d = mantisse.search(/\./);
+      for(var i = 0; i < bits_m; ++i){
+        id = id_temp + i;
+        if(pos_d >= 0 && i < mantisse.length-pos_d){
+          if(mantisse.charAt(pos_d+1+i) === "1"){
+            document.getElementById(id).checked = true;
+          }
+          else
+            document.getElementById(id).checked = false; 
+        }
+            
+      }
+    } // denormalisiert oder 0
+    
+    // normalisierte Zahl
+    if(-bias < expo_2 && expo_2 <= bias){
+      var char_str = calcTen2Ex(bias, expo_2);
+      id_temp = "check_c";
+      for(var i = 0; i < bits_c; ++i){
+        id = id_temp + (bits_c-1-i);
+        if(char_str.charAt(char_str.length-1-i) === "1"){
           document.getElementById(id).checked = true;
         }
+        else
+          document.getElementById(id).checked = false;
       }
-      else
-        document.getElementById(id).checked = false;     
-    }
+      // Mantisse eintragen
+      id_temp = "check_m";
+      var pos_d = mantisse.search(/\./);
+      for(var i = 0; i < bits_m; ++i){
+        id = id_temp + i;
+        if(pos_d >= 0 && i < mantisse.length-pos_d){
+          if(mantisse.charAt(pos_d+1+i) === "1"){
+            document.getElementById(id).checked = true;
+          }
+          else
+            document.getElementById(id).checked = false;  
+        }      
+      }
+    } // normalisierte Zahl
+
     // Aufrunden
     var fertig = false;
     id_temp = "check_m";
@@ -328,10 +382,11 @@ function calcTen2IEEE(){
             fertig = true;
           }
         }
-
       }
-    }
-  }
+    } // Aufrunden
+  } // else-Teil von Inf/NaN
+  
+  // Vorzeichen
   if(-1 === sign)
     document.getElementById("check_v").checked = true;
   else

@@ -55,6 +55,7 @@ function formNegativTen2Two() {
   document.getElementById("s2").innerHTML = inputText_B10;
   document.getElementById("s3").innerHTML = inputText_B2a;
   document.getElementById("s4").innerHTML = inputText_B2;
+  document.getElementById("s5").style.visibility = "hidden";
 };
 
 

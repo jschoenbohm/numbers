@@ -52,6 +52,7 @@ function formB2B() {
   document.getElementById("s2").innerHTML = inputText;
   document.getElementById("s3").innerHTML = outputText;
   document.getElementById("s4").style.visibility = "hidden";
+  document.getElementById("s5").style.visibility = "hidden";
 };
 
 /*! \fn calcB2B()
