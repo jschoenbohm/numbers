@@ -248,9 +248,21 @@ function calcTen2IEEE(){
   bias = parseInt(bias,10);
   bits_c = parseInt(bits_c,10);
   bits_m = parseInt(bits_m,10);
+  var id;
+  var id_temp;
   // expo_2 größer als bias
   if(expo_2 > bias){
     // +-Inf
+    id_temp = "check_c";
+    for(var i = 0; i < bits_c; ++i){
+      id = id_temp + i;
+      document.getElementById(id).checked = true;
+    }
+    id_temp = "check_m";
+    for(var i = 0; i < bits_m; ++i){
+      id = id_temp + i;
+      document.getElementById(id).checked = false;
+    }
   }
   // expo_2 kleiner als -bias
   if(expo_2 < -bias){
@@ -260,8 +272,8 @@ function calcTen2IEEE(){
   // alle anderen Fälle
   if(-bias <= expo_2 && expo_2 <= bias){
     var char_str = calcTen2Ex(bias, expo_2);
-    var id_temp = "check_c";
-    var id = "";
+    id_temp = "check_c";
+    id = "";
     alert("Char: " + char_str);
     for(var i = 0; i < bits_c; ++i){
       id = id_temp + (bits_c-1-i);
@@ -285,8 +297,45 @@ function calcTen2IEEE(){
       else
         document.getElementById(id).checked = false;     
     }
-    // Aufrunden??
+    // Aufrunden
+    var fertig = false;
+    id_temp = "check_m";
+    var N = bits_m-1;
+    if(mantisse.charAt(2+bits_m) === "1"){
+      while(!fertig && N >= 0){
+        id = id_temp + N;
+        if(document.getElementById(id).checked === true){
+          document.getElementById(id).checked = false;
+          --N;
+        }
+        else{
+          document.getElementById(id).checked = true;
+          fertig = true;
+        }
+      }
+      if(!fertig){
+        // Alle M-Bits sind auf 0 gerundet, dann erfolgt ein Übertrag auf das nächste C-Bit
+        id_temp = "check_c";
+        N = bits_c-1;
+        while(!fertig && N >= 0){
+          id = id_temp + N;
+          if(document.getElementById(id).checked === true){
+            document.getElementById(id).checked = false;
+            --N;
+          }
+          else{
+            document.getElementById(id).checked = true;
+            fertig = true;
+          }
+        }
+
+      }
+    }
   }
+  if(-1 === sign)
+    document.getElementById("check_v").checked = true;
+  else
+    document.getElementById("check_v").checked = false;
   calcIEEE2Ten();
 };
 
