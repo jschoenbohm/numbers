@@ -37,12 +37,12 @@ function formB2B() {
   var comment = '<h2>Geben Sie im grünen Feld die Ausgangsbasis [2-'+B_MAX+'] und die umzurechnende Dezimalzahl ein. \
     Im roten Feld geben Sie die Zielbasis [2-'+B_MAX+'] ein. Drücken Sie auf \"Umrechen\". Dann erscheint im roten Feld\
     die umgerechnete Zahl.</h2>';
-  var partBaseText = 'min="2" max="'+B_MAX+'" pattern="[2-9]|1[0-9]" size="2" />';
+  var partBaseText = 'min="2" max="'+B_MAX+'" pattern="[2-9]|1[0-9]" size="2" onclick="this.select()" />';
   
   var inputText = '<label for="base_1">Basis</label>\
     <input type="number" id="base_1" name="base_1" value="2" ' + partBaseText +
     '<label for="number_1">Zahl</label>\
-    <input type="text" id="number_1" name="number_1" value="0" />\
+    <input type="text" id="number_1" name="number_1" value="0" onclick="this.select()"/>\
     <input type="button" id="bt_calc" name="bt_calc" onclick="calcB2B()" value="Umrechnen" />';
   var outputText = '<label for="base_2">Basis</label>\
     <input type="number" id="base_2" name="base_2" value="10" ' + partBaseText + 

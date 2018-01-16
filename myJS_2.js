@@ -28,26 +28,26 @@ function formNegativTen2Two() {
   var inputText_B10 = 
     '<h3>Zahl zur Basis 10</h3>' +
     '<label for="number_1">Zahl</label>\
-    <input type="text" id="number_1" name="number_1" value="0" pattern="-[0-9]+|[0-9]+" />\
+    <input type="text" id="number_1" name="number_1" value="0" pattern="-[0-9]+|[0-9]+" onclick="this.select()"/>\
     <input type="button" id="bt_calc_1" name="bt_calc_1" onclick="calcTen2ExZw()" value="Berechnen" />';
     
   var inputText_B2a =
     '<label for="digits">Stellenzahl</label>\
     <input type="text" id="digits" name="digits" value="8"\
-    min="2" max="64" pattern="[2-9]|[1-5][0-9]|6[0-4]" size="2"/>' +
+    min="2" max="64" pattern="[2-9]|[1-5][0-9]|6[0-4]" size="2" onclick="this.select()"/>' +
     '<label for="bias" style="margin-left:5px;">Bias</label>\
     <input type="text" id="bias" name="bias" value="4"\
-    min="0" max="128" pattern="[0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]" size="3"/>';
+    min="0" max="128" pattern="[0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]" size="3" onclick="this.select()"/>';
   
   var inputText_B2 = 
     '<h3>Zahlen zur Basis 2</h3>' +
     '<h4>Exzessdarstellung</h4>' +
     '<label for="number_2">Zahl</label>\
-    <input type="text" id="number_2" name="number_2" value="0" pattern="-[0-1]+|[0-1]+"/>' + 
+    <input type="text" id="number_2" name="number_2" value="0" pattern="-[0-1]+|[0-1]+" onclick="this.select()"/>' + 
     '<input type="button" id="bt_calc_2" name="bt_calc_2" onclick="calcEx2ZwTen()" value="Berechnen" />' +
     '<h4>Zweierkomplement</h4>' +
     '<label for="number_3">Zahl</label>\
-    <input type="text" id="number_3" name="number_3" value="0" pattern="-[0-1]+|[0-1]+"/>' +
+    <input type="text" id="number_3" name="number_3" value="0" pattern="-[0-1]+|[0-1]+" onclick="this.select()"/>' +
     '<input type="button" id="bt_calc_3" name="bt_calc_3" onclick="calcZw2ExTen()" value="Berechnen" />'
     ;
   document.getElementById("s4").style.visibility = "visible";

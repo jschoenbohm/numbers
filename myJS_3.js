@@ -28,16 +28,16 @@ function formIEEE754() {
   var inputText_B10 = 
     '<h3>Zahl zur Basis 10</h3>' +
     '<label for="number_ie10">Zahl</label>\
-    <input type="text" id="number_ie10" name="number_ie10" value="0" style="padding-left:5px;" size="25"/>\
-    <input type="button" id="bt_calc_ie10" name="bt_calc_ie10" onclick="calcTen2IEEE()" value="Berechnen" style="margin-right:10px;" />';
+    <input type="text" id="number_ie10" name="number_ie10" value="0" style="padding-left:5px;" size="25" onclick="this.select()"/>\
+    <input type="button" id="bt_calc_ie10" name="bt_calc_ie10" onclick="calcTen2IEEE()" value="Berechnen" style="margin-right:10px;" autofocus/>';
     
   var inputText_B2a =
     '<label for="bit_char">Bits Charakteristik</label>\
     <input type="text" id="bit_char" name="bit_char" onchange="drawIEEE()" value="8"\
-    min="2" max="11" pattern="[2-9]|1[0-1]" size="2" style="padding-left:5px;"/>' +
+    min="2" max="11" pattern="[2-9]|1[0-1]" size="2" style="padding-left:5px;" onclick="this.select()"/>' +
     '<label for="bit_mant" style="margin-left:5px;">Bits Mantisse</label>\
     <input type="text" id="bit_mant" name="bit_mant" onchange="drawIEEE()" value="23"\
-    min="2" max="52" pattern="[2-9]|[1-4][0-9]|5[0-1]" size="2" style="padding-left:5px;"/>' +
+    min="2" max="52" pattern="[2-9]|[1-4][0-9]|5[0-1]" size="2" style="padding-left:5px;" onclick="this.select()"/>' +
     '<label for="bias_ie" style="margin-left:5px;">Bias</label>\
     <input type="text" id="bias_ie" name="bias_ie" style="background-color:LightGray; padding-left:5px;" size="3" readonly/>'+
     '<input type="text" id="bit_char_h" name="bit_char_h" style="visibility:hidden;" value="8" readonly/>'+
@@ -58,7 +58,7 @@ function formIEEE754() {
   document.getElementById("s2").innerHTML = inputText_B10;
   document.getElementById("s3").innerHTML = inputText_B2a;
   document.getElementById("s5").innerHTML = inputText_Testfall;
-  document.getElementById("s5").style.visibility = "hidden";
+  document.getElementById("s5").style.visibility = "visible";
   drawIEEE();
 };
 
@@ -262,6 +262,7 @@ function calcTen2IEEE(){
   var num2 = Math.pow(10,expo_10) / Math.pow(2,y2);
   var expo_2 = y1+y2;
   var num4 = num1;
+  
   if(num2 !== 0){
     var num3 = num1 * num2;
     var y3 = Math.floor(Math.log(num3)/Math.LN2);
@@ -278,84 +279,122 @@ function calcTen2IEEE(){
   
   // expo_2 größer als bias => Inf oder NaN
   if(expo_2 > bias){
-    // +-Inf
-    id_temp = "check_c";
-    for(var i = 0; i < bits_c; ++i){
-      id = id_temp + i;
-      document.getElementById(id).checked = true;
-    }
-    id_temp = "check_m";
-    for(var i = 0; i < bits_m; ++i){
-      id = id_temp + i;
-      document.getElementById(id).checked = false;
-    }
+    InfNaN(bits_m, bits_c);
   }
   else{
-    // expo_2 kleiner als -bias => denormalisiert oder 0
+    // expo_2 kleiner als -bias => denormalisiert(oder 0)
     if(expo_2 <= -bias){
-      var expo_denorm = expo_2;
-      //alert("a " + mantisse);
-      mantisse = mantisse.substring(2,mantisse.length);
-      mantisse = ("1").concat(mantisse);
-      //expo_denorm = expo_denorm+1;
-      while(expo_denorm < -bias){
-        mantisse = ("0").concat(mantisse);
-        expo_denorm = expo_denorm+1;        
-      }
-      mantisse = ("0.").concat(mantisse);
-      id_temp = "check_c";     
-      for(var i = 0; i < bits_c; ++i){
-        id = id_temp + (bits_c-1-i);
-          document.getElementById(id).checked = false;
-      } 
-      // Mantisse eintragen
-      id_temp = "check_m";
-      var pos_d = mantisse.search(/\./);
-      for(var i = 0; i < bits_m; ++i){
-        id = id_temp + i;
-        if(pos_d >= 0 && i < mantisse.length-pos_d){
-          if(mantisse.charAt(pos_d+1+i) === "1"){
-            document.getElementById(id).checked = true;
-          }
-          else
-            document.getElementById(id).checked = false; 
-        }
-            
-      }
-    } // denormalisiert oder 0
-    
-    // normalisierte Zahl
-    if(-bias < expo_2 && expo_2 <= bias){
-      var char_str = calcTen2Ex(bias, expo_2);
-      id_temp = "check_c";
-      for(var i = 0; i < bits_c; ++i){
-        id = id_temp + (bits_c-1-i);
-        if(char_str.charAt(char_str.length-1-i) === "1"){
-          document.getElementById(id).checked = true;
-        }
-        else
-          document.getElementById(id).checked = false;
-      }
-      // Mantisse eintragen
-      id_temp = "check_m";
-      var pos_d = mantisse.search(/\./);
-      for(var i = 0; i < bits_m; ++i){
-        id = id_temp + i;
-        if(pos_d >= 0 && i < mantisse.length-pos_d){
-          if(mantisse.charAt(pos_d+1+i) === "1"){
-            document.getElementById(id).checked = true;
-          }
-          else
-            document.getElementById(id).checked = false;  
-        }      
-      }
-    } // normalisierte Zahl
-
+      mantisse = denormalisiert(mantisse, expo_2, bits_m, bits_c, bias);
+    }
+    else{
+      // normalisierte Zahl
+      //if(-bias < expo_2 && expo_2 <= bias){
+      normalisiert(mantisse, expo_2, bits_m, bits_c, bias);
+    }
     // Aufrunden
-    var fertig = false;
-    id_temp = "check_m";
-    var N = bits_m-1;
-    if(mantisse.charAt(2+bits_m) === "1"){
+    
+    runden(mantisse,bits_m, bits_c);
+  } // else-Teil von Inf/NaN
+  
+  // Vorzeichen
+  setSign(sign);
+  calcIEEE2Ten();
+};
+
+function InfNaN(bits_m, bits_c){
+  // +-Inf
+  var id_temp = "check_c";
+  var id;
+  for(var i = 0; i < bits_c; ++i){
+    id = id_temp + i;
+    document.getElementById(id).checked = true;
+  }
+  id_temp = "check_m";
+  for(var i = 0; i < bits_m; ++i){
+    id = id_temp + i;
+    document.getElementById(id).checked = false;
+  }  
+};
+
+function denormalisiert(mantisse, expo_2, bits_m, bits_c, bias){
+  var expo_denorm = expo_2;
+  mantisse = mantisse.substring(2,mantisse.length);
+  mantisse = ("1").concat(mantisse);
+  while(expo_denorm < -bias){
+    mantisse = ("0").concat(mantisse);
+    expo_denorm = expo_denorm+1;        
+  }
+  mantisse = ("0.").concat(mantisse);
+  var id_temp = "check_c";     
+  var id;
+  for(var i = 0; i < bits_c; ++i){
+    id = id_temp + (bits_c-1-i);
+      document.getElementById(id).checked = false;
+  } 
+  // Mantisse eintragen
+  id_temp = "check_m";
+  var pos_d = mantisse.search(/\./);
+  for(var i = 0; i < bits_m; ++i){
+    id = id_temp + i;
+    if(pos_d >= 0 && i < mantisse.length-pos_d){
+      if(mantisse.charAt(pos_d+1+i) === "1"){
+        document.getElementById(id).checked = true;
+      }
+      else
+        document.getElementById(id).checked = false; 
+    }      
+  } 
+  return mantisse;  
+};
+
+function normalisiert(mantisse, expo_2, bits_m, bits_c, bias){
+  var char_str = calcTen2Ex(bias, expo_2);
+  var id_temp = "check_c";
+  var id;
+  for(var i = 0; i < bits_c; ++i){
+    id = id_temp + (bits_c-1-i);
+    if(char_str.charAt(char_str.length-1-i) === "1"){
+      document.getElementById(id).checked = true;
+    }
+    else
+      document.getElementById(id).checked = false;
+  }
+  // Mantisse eintragen
+  id_temp = "check_m";
+  var pos_d = mantisse.search(/\./);
+  for(var i = 0; i < bits_m; ++i){
+    id = id_temp + i;
+    if(pos_d >= 0 && i < mantisse.length-pos_d){
+      if(mantisse.charAt(pos_d+1+i) === "1"){
+        document.getElementById(id).checked = true;
+      }
+      else
+        document.getElementById(id).checked = false;  
+    }      
+  }
+};
+
+function runden(mantisse,bits_m, bits_c){
+  var fertig = false;
+  var id_temp = "check_m";
+  var id;
+  var N = bits_m-1;
+  if(mantisse.charAt(2+bits_m) === "1"){
+    while(!fertig && N >= 0){
+      id = id_temp + N;
+      if(document.getElementById(id).checked === true){
+        document.getElementById(id).checked = false;
+        --N;
+      }
+      else{
+        document.getElementById(id).checked = true;
+        fertig = true;
+      }
+    }
+    if(!fertig){
+      // Alle M-Bits sind auf 0 gerundet, dann erfolgt ein Übertrag auf das nächste C-Bit
+      id_temp = "check_c";
+      N = bits_c-1;
       while(!fertig && N >= 0){
         id = id_temp + N;
         if(document.getElementById(id).checked === true){
@@ -367,31 +406,13 @@ function calcTen2IEEE(){
           fertig = true;
         }
       }
-      if(!fertig){
-        // Alle M-Bits sind auf 0 gerundet, dann erfolgt ein Übertrag auf das nächste C-Bit
-        id_temp = "check_c";
-        N = bits_c-1;
-        while(!fertig && N >= 0){
-          id = id_temp + N;
-          if(document.getElementById(id).checked === true){
-            document.getElementById(id).checked = false;
-            --N;
-          }
-          else{
-            document.getElementById(id).checked = true;
-            fertig = true;
-          }
-        }
-      }
-    } // Aufrunden
-  } // else-Teil von Inf/NaN
-  
-  // Vorzeichen
+    }
+  } // Aufrunden  
+};
+
+function setSign(sign){
   if(-1 === sign)
     document.getElementById("check_v").checked = true;
   else
-    document.getElementById("check_v").checked = false;
-  calcIEEE2Ten();
+    document.getElementById("check_v").checked = false;  
 };
-
-
