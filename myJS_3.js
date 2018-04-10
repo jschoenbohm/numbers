@@ -44,14 +44,14 @@ function formIEEE754() {
     '<input type="text" id="bit_mant_h" name="bit_mant_h" style="visibility:hidden;" value="23" readonly/>';
 
   var inputText_Testfall = 'Charakteristik: 4, Mantisse: 4<p><table>\
-  <tr><th>Dezimal</th><th>Mantisse</th><th>Exponent</th><th>Gerundet</th></tr>\
-  <tr><td>252</td> <td>1.1111|1</td> <td>7</td> <td>Inf</td></tr>\
-  <tr><td>0.49609375</td> <td>1.1111|1</td> <td>-2</td> <td>0.5</td></tr>\
-  <tr><td>0.3046875</td> <td>1.0011|1</td> <td>-2</td> <td>0.3125</td></tr>\
-  <tr><td>0.314453125</td> <td>1.0100|0</td> <td>-2</td> <td>0.3125</td></tr>\
-  <tr><td>0.00390625</td> <td>0.0100|0</td> <td>-6</td> <td>0.00390625</td></tr>\
-  <tr><td>0.00537109375</td> <td>0.0101|1</td> <td>-6</td> <td>0.005859375</td></tr>\
-  <tr><td>0.0009765625</td> <td>0.0001|0</td> <td>-6</td> <td>0.0009765625</td></tr>\
+  <tr><th>Dezimal</th><th>Dual</th><th>Gerundet</th></tr>\
+  <tr><td>252</td> <td>1.1111|1 * 2^7</td><td>Inf</td></tr>\
+  <tr><td>0.4921875</td> <td>1.1111|1 * 2^-2</td>  <td>0.5</td></tr>\
+  <tr><td>0.3046875</td> <td>1.0011|1 * 2^-2</td> <td>0.3125</td></tr>\
+  <tr><td>0.314453125</td> <td>1.0100|0 * 2^-2</td>  <td>0.3125</td></tr>\
+  <tr><td>0.00390625</td> <td>0.0100|0 * 2^-6</td> <td>0.00390625</td></tr>\
+  <tr><td>0.00537109375</td> <td>0.0101|1 * 2^-6</td>  <td>0.005859375</td></tr>\
+  <tr><td>0.0009765625</td> <td>0.0001|0 * 2^-6</td>  <td>0.0009765625</td></tr>\
   </table>';
   document.getElementById("s4").style.visibility = "visible";
   document.getElementById("s1").innerHTML = comment;
@@ -250,7 +250,7 @@ function calcTen2IEEE(){
     id_temp = "check_m";   
     for(var i = 0; i < bits_m; ++i){
       id = id_temp + (bits_m-1-i);
-        document.getElementById(id).checked = false;
+      document.getElementById(id).checked = false;
     } 
     document.getElementById("number_ie2").innerHTML = "0";
     return;
@@ -271,6 +271,13 @@ function calcTen2IEEE(){
   }
   
   var mantisse = calcTen2B("2", num4.toString());
+  
+  // Mantissenbits zurück setzen
+  var id_temp = "check_m";
+  for(var i = 0; i < bits_m; ++i){
+    id = id_temp + i;
+    document.getElementById(id).checked = false;        
+  }  
   
   // Spezialfälle vorher abfangen
   bias = parseInt(bias,10);
